@@ -397,7 +397,7 @@ func TestCreateCloudAPIKey(t *testing.T) {
 func TestListCloudAPIKeys(t *testing.T) {
    	client := NewClient(1234568)
     countArg := 10
-    client.GenerateCloudAPIKeys(countArg)
+    client.GenerateCloudAPIKeys(countArg, "", "")
    
     want := countArg
     got, _ := client.ListCloudAPIKeys("")
@@ -413,7 +413,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
         countArg := 5
 
         key, _ := client.GenerateCloudAPIKey("", "")
-        client.GenerateCloudAPIKeys(countArg)
+        client.GenerateCloudAPIKeys(countArg, "", "")
         
         client.DeleteCloudAPIKey("", key.Name)
        
@@ -429,7 +429,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
         countArg := 10
 
         key, _ := client.GenerateCloudAPIKey("", "")
-        client.GenerateCloudAPIKeys(countArg)
+        client.GenerateCloudAPIKeys(countArg, "", "")
 
 		client.DeleteCloudAPIKey("", key.Name)
 
@@ -452,7 +452,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
         countArg := 10
 
 		key, err := client.GenerateCloudAPIKey("", "")
-		_, err = client.GenerateCloudAPIKeys(countArg)
+		_, err = client.GenerateCloudAPIKeys(countArg, "", "")
 		if err != nil {
 			log.Print("test", err)
 		}

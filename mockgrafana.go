@@ -192,11 +192,16 @@ func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudA
 	return newKey, nil
 }
 
-func (client *MockClient) GenerateCloudAPIKeys(count int) ([]*gapi.CloudAPIKey, error) {
+func (client *MockClient) GenerateCloudAPIKeys(count int, prefix, role string) ([]*gapi.CloudAPIKey, error) {
     var keys []*gapi.CloudAPIKey
-    
+    var name string
+     
     for i := 0; i < count; i++ {
-       key, err := client.GenerateCloudAPIKey("", "")
+       if prefix != "" {
+             name = prefix + "-" +  StringGenerator(len(client.CloudAPIKeys) + 1)
+       }
+       name := fmt.Sprintf("%v-%v", prefix, name)
+       key, err := client.GenerateCloudAPIKey("", name)
        if err != nil {
             return nil, err
        }
