@@ -166,15 +166,9 @@ func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
 
 	for idx, key := range client.CloudAPIKeys {
 		if keyName == key.Name {
-            
-            keys := client.CloudAPIKeys
-            keys = append(keys[:idx], keys[idx+1:]...)
-            client.CloudAPIKeys = keys
-/*
-			client.CloudAPIKeys[idx] = client.CloudAPIKeys[len(client.CloudAPIKeys)-1]
-			client.CloudAPIKeys[len(client.CloudAPIKeys)-1] = nil
+			copy(client.CloudAPIKeys[idx:], client.CloudAPIKeys[idx+1:])
+			client.CloudAPIKeys[len(client.CloudAPIKeys)-1] = &gapi.CloudAPIKey{}
 			client.CloudAPIKeys = client.CloudAPIKeys[:len(client.CloudAPIKeys)-1]
-            */
 		}
 	}
 	return nil
