@@ -162,18 +162,16 @@ func (client *MockClient) ListCloudAPIKeys(org string) (*gapi.ListCloudAPIKeysOu
 	}, nil
 }
 
-
 func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
-    for idx, key := range client.CloudAPIKeys {
-        if keyName == key.Name {
-           client.CloudAPIKeys[idx] = client.CloudAPIKeys[len(client.CloudAPIKeys) - 1]
-           client.CloudAPIKeys[len(client.CloudAPIKeys) - 1] = &gapi.CloudAPIKey{}
-           client.CloudAPIKeys = client.CloudAPIKeys[:len(client.CloudAPIKeys) - 1]
-        }
-    }
-    return nil
-} 
-
+	for idx, key := range client.CloudAPIKeys {
+		if keyName == key.Name {
+			client.CloudAPIKeys[idx] = client.CloudAPIKeys[len(client.CloudAPIKeys)-1]
+//			client.CloudAPIKeys[len(client.CloudAPIKeys)-1] = &gapi.CloudAPIKey{}
+			client.CloudAPIKeys = client.CloudAPIKeys[:len(client.CloudAPIKeys)-1]
+		}
+	}
+	return nil
+}
 
 func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudAPIKeyInput) (*gapi.CloudAPIKey, error) {
 	for _, key := range client.CloudAPIKeys {
@@ -193,23 +191,22 @@ func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudA
 }
 
 func (client *MockClient) GenerateCloudAPIKeys(count int, prefix, role string) ([]*gapi.CloudAPIKey, error) {
-    var keys []*gapi.CloudAPIKey
-    var name string
-     
-    for i := 0; i < count; i++ {
-       if prefix != "" {
-             name = prefix + "-" +  StringGenerator(len(client.CloudAPIKeys) + 1)
-       }
-       key, err := client.GenerateCloudAPIKey(name, role)
-       if err != nil {
-            return nil, err
-       }
+	var keys []*gapi.CloudAPIKey
+	var name string
 
-       keys = append(keys, key)
-   }
-   return keys, nil
+	for i := 0; i < count; i++ {
+		if prefix != "" {
+			name = prefix + "-" + StringGenerator(len(client.CloudAPIKeys)+1)
+		}
+		key, err := client.GenerateCloudAPIKey(name, role)
+		if err != nil {
+			return nil, err
+		}
+
+		keys = append(keys, key)
+	}
+	return keys, nil
 }
-        
 
 func (client *MockClient) GenerateCloudAPIKey(name, role string) (*gapi.CloudAPIKey, error) {
 	if name == "" {
@@ -228,17 +225,16 @@ func (client *MockClient) GenerateCloudAPIKey(name, role string) (*gapi.CloudAPI
 }
 func (client *MockClient) GenerateServiceAccountTokens(saID int64, count int) ([]*gapi.CreateServiceAccountTokenResponse, error) {
 
-    var serviceAccountTokenResponses []*gapi.CreateServiceAccountTokenResponse
-    for i := 0; i < count; i++ {
-        resp, err := client.GenerateServiceAccountToken("", saID)
-        if err != nil {
-            return nil, err
-        }
-        serviceAccountTokenResponses = append(serviceAccountTokenResponses, resp)
-    }
-    return serviceAccountTokenResponses, nil
+	var serviceAccountTokenResponses []*gapi.CreateServiceAccountTokenResponse
+	for i := 0; i < count; i++ {
+		resp, err := client.GenerateServiceAccountToken("", saID)
+		if err != nil {
+			return nil, err
+		}
+		serviceAccountTokenResponses = append(serviceAccountTokenResponses, resp)
+	}
+	return serviceAccountTokenResponses, nil
 }
-
 
 func (client *MockClient) GenerateServiceAccountToken(name string, saID int64) (*gapi.CreateServiceAccountTokenResponse, error) {
 	if name == "" {
@@ -253,16 +249,16 @@ func (client *MockClient) GenerateServiceAccountToken(name string, saID int64) (
 }
 
 func (client *MockClient) GenerateServiceAccounts(count int) ([]*gapi.ServiceAccountDTO, error) {
-    var serviceAccounts []*gapi.ServiceAccountDTO
-    for i := 0; i < count; i++ {
-        sa, err := client.GenerateServiceAccount("", "")
-        if err != nil {
-            return nil, err
-        }
-        serviceAccounts = append(serviceAccounts, sa)
-    }
-    
-    return serviceAccounts, nil
+	var serviceAccounts []*gapi.ServiceAccountDTO
+	for i := 0; i < count; i++ {
+		sa, err := client.GenerateServiceAccount("", "")
+		if err != nil {
+			return nil, err
+		}
+		serviceAccounts = append(serviceAccounts, sa)
+	}
+
+	return serviceAccounts, nil
 }
 
 func (client *MockClient) GenerateServiceAccount(name, role string) (*gapi.ServiceAccountDTO, error) {
