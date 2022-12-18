@@ -1,4 +1,4 @@
-module mockgrafana
+module github.com/celo-org/mockgrafana
 
 go 1.19
 
