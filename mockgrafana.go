@@ -200,7 +200,6 @@ func (client *MockClient) GenerateCloudAPIKeys(count int, prefix, role string) (
        if prefix != "" {
              name = prefix + "-" +  StringGenerator(len(client.CloudAPIKeys) + 1)
        }
-       name := fmt.Sprintf("%v-%v", prefix, name)
        key, err := client.GenerateCloudAPIKey("", name)
        if err != nil {
             return nil, err
