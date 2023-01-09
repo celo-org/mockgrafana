@@ -59,7 +59,7 @@ func (client *MockClient) CreateServiceAccountToken(request gapi.CreateServiceAc
 			found = true
 		}
 	}
-	if found == false {
+	if !found {
 		return nil, fmt.Errorf("service account not found")
 	}
 
@@ -113,21 +113,15 @@ func (client *MockClient) GetServiceAccountTokens(serviceAccountID int64) ([]gap
 }
 
 func (client *MockClient) DeleteServiceAccount(serviceAccountID int64) (*gapi.DeleteServiceAccountResponse, error) {
-	var found bool
 	for idx, sa := range client.ServiceAccountsDTO {
 		if sa.ID == serviceAccountID {
 			client.ServiceAccountsDTO[idx] = client.ServiceAccountsDTO[len(client.ServiceAccountsDTO)-1]
 			client.ServiceAccountsDTO[len(client.ServiceAccountsDTO)-1] = gapi.ServiceAccountDTO{}
 			client.ServiceAccountsDTO = client.ServiceAccountsDTO[:len(client.ServiceAccountsDTO)-1]
-			found = true
+            return nil, nil
 		}
 	}
-
-	if found != true {
-		return nil, fmt.Errorf("could not find token")
-	}
-
-	return nil, nil
+	return nil, fmt.Errorf("could not find token")
 }
 
 func (client *MockClient) DeleteServiceAccountToken(serviceAccountID, tokenID int64) (*gapi.DeleteServiceAccountResponse, error) {
@@ -137,7 +131,7 @@ func (client *MockClient) DeleteServiceAccountToken(serviceAccountID, tokenID in
 			saFound = true
 		}
 	}
-	if saFound != true {
+	if !saFound  {
 		return nil, fmt.Errorf("service account not found")
 	}
 	var tokenFound bool
@@ -150,7 +144,7 @@ func (client *MockClient) DeleteServiceAccountToken(serviceAccountID, tokenID in
 		}
 	}
 
-	if tokenFound != true {
+	if !tokenFound {
 		return nil, fmt.Errorf("token not found")
 	}
 	return nil, nil
