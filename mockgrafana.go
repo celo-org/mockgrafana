@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// MockClient is a substitute for the real grafana api token so we can
+// simulate the same behavior
 type MockClient struct {
 	OrgID              int64
 	ServiceAccountsDTO []gapi.ServiceAccountDTO
@@ -14,6 +16,7 @@ type MockClient struct {
 	CloudAPIKeys       []*gapi.CloudAPIKey
 }
 
+// Token  is a simulation of a grafana api token
 type Token struct {
 	ID               int64      `json:"id"`
 	Name             string     `json:"name"`
@@ -24,14 +27,16 @@ type Token struct {
 	SecondsToLive    int64      `json:"secondsToLive,omitempty"`
 }
 
+// NewClient returns a MockClient for use in simulating the grafana api key
 func NewClient(orgID int64) *MockClient {
 	return &MockClient{
 		OrgID: orgID,
 	}
 }
 
+// CreateServiceAccount is a Mock of the grafana api method, that will take a CreateServieAccountRequest and will create and return 
+// the grafana service account created
 func (client *MockClient) CreateServiceAccount(request gapi.CreateServiceAccountRequest) (*gapi.ServiceAccountDTO, error) {
-
 	for _, sa := range client.ServiceAccountsDTO {
 		if sa.Name == request.Name {
 			return nil, fmt.Errorf("service account name must be unique")
@@ -47,11 +52,11 @@ func (client *MockClient) CreateServiceAccount(request gapi.CreateServiceAccount
 		Tokens: 0,
 	}
 	client.ServiceAccountsDTO = append(client.ServiceAccountsDTO, serviceAccount)
-
 	return &serviceAccount, nil
-
 }
 
+// CreateServiceAccountToken is a Mock of the grafana api method, that will take a CreateServiceAccountTokenRequest and will create
+// and return the grafana service account token created.
 func (client *MockClient) CreateServiceAccountToken(request gapi.CreateServiceAccountTokenRequest) (*gapi.CreateServiceAccountTokenResponse, error) {
 	var found bool
 	for _, sa := range client.ServiceAccountsDTO {
@@ -92,10 +97,12 @@ func (client *MockClient) CreateServiceAccountToken(request gapi.CreateServiceAc
 	}, nil
 }
 
+// GetServiceAccounts is a Mock of the grafana api method, that will list all service accounts
 func (client *MockClient) GetServiceAccounts() ([]gapi.ServiceAccountDTO, error) {
 	return client.ServiceAccountsDTO, nil
 }
 
+// GetServiceAccountTokens is a Mock of the grafana api method, that will take a serviceAccountID and return a GetServiceAccountTokensResponse
 func (client *MockClient) GetServiceAccountTokens(serviceAccountID int64) ([]gapi.GetServiceAccountTokensResponse, error) {
 	response := make([]gapi.GetServiceAccountTokensResponse, 0)
 
@@ -112,6 +119,7 @@ func (client *MockClient) GetServiceAccountTokens(serviceAccountID int64) ([]gap
 	return response, nil
 }
 
+// DeleteServiceAccount is a Mock of the grafana api method, that will take a serviceAccountID and delete the service account
 func (client *MockClient) DeleteServiceAccount(serviceAccountID int64) (*gapi.DeleteServiceAccountResponse, error) {
 	for idx, sa := range client.ServiceAccountsDTO {
 		if sa.ID == serviceAccountID {
@@ -124,6 +132,8 @@ func (client *MockClient) DeleteServiceAccount(serviceAccountID int64) (*gapi.De
 	return nil, fmt.Errorf("could not find token")
 }
 
+// DeleteServiceAccountToken is a Mock of the grafana api method, that will take a serviceAccountID and tokenID, and deletes
+// the token from that service account
 func (client *MockClient) DeleteServiceAccountToken(serviceAccountID, tokenID int64) (*gapi.DeleteServiceAccountResponse, error) {
 	var saFound bool
 	for _, sa := range client.ServiceAccountsDTO {
@@ -185,6 +195,8 @@ func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudA
 	return newKey, nil
 }
 
+// GenerateCloudAPIKeys generates x number of APIKeys (x specified by count) with an option prefix and role.
+// if role isn't specified, then it a random one will be generated.
 func (client *MockClient) GenerateCloudAPIKeys(count int, prefix, role string) ([]*gapi.CloudAPIKey, error) {
 	var keys []*gapi.CloudAPIKey
 	var name string
@@ -203,6 +215,8 @@ func (client *MockClient) GenerateCloudAPIKeys(count int, prefix, role string) (
 	return keys, nil
 }
 
+// GenerateCloudAPIKey generates a CloudAPIKey with the supplied inputs (name/role) or generates them randomly
+// if not given
 func (client *MockClient) GenerateCloudAPIKey(name, role string) (*gapi.CloudAPIKey, error) {
 	if name == "" {
 		name = StringGenerator(len(client.CloudAPIKeys) + 1)
@@ -211,13 +225,15 @@ func (client *MockClient) GenerateCloudAPIKey(name, role string) (*gapi.CloudAPI
 	if role == "" {
 		role = RoleGenerator()
 	}
-
 	tokenRequest := gapi.CreateCloudAPIKeyInput{
 		Name: name,
 		Role: role,
 	}
 	return client.CreateCloudAPIKey("", &tokenRequest)
 }
+
+// GenerateServiceAccountTokens take a service account ID and count integer, and then Generates
+// that many service accounts and returns a CreateServiceAccountTokenResponse
 func (client *MockClient) GenerateServiceAccountTokens(saID int64, count int) ([]*gapi.CreateServiceAccountTokenResponse, error) {
 
 	var serviceAccountTokenResponses []*gapi.CreateServiceAccountTokenResponse
@@ -231,6 +247,7 @@ func (client *MockClient) GenerateServiceAccountTokens(saID int64, count int) ([
 	return serviceAccountTokenResponses, nil
 }
 
+// GenerateServiceAccountToken Generates a ServiceAccountToken 
 func (client *MockClient) GenerateServiceAccountToken(name string, saID int64) (*gapi.CreateServiceAccountTokenResponse, error) {
 	if name == "" {
 		name = StringGenerator(len(client.Tokens) + 1)
@@ -243,6 +260,7 @@ func (client *MockClient) GenerateServiceAccountToken(name string, saID int64) (
 	return client.CreateServiceAccountToken(tokenRequest)
 }
 
+// GenerateServiceAccounts takes a count integer and Generates that many service accounts
 func (client *MockClient) GenerateServiceAccounts(count int) ([]*gapi.ServiceAccountDTO, error) {
 	var serviceAccounts []*gapi.ServiceAccountDTO
 	for i := 0; i < count; i++ {
@@ -256,6 +274,8 @@ func (client *MockClient) GenerateServiceAccounts(count int) ([]*gapi.ServiceAcc
 	return serviceAccounts, nil
 }
 
+// GenerateServiceAccount takes a name and a role and returns a service account.  If name and role
+// aren't specified, it will create with random information
 func (client *MockClient) GenerateServiceAccount(name, role string) (*gapi.ServiceAccountDTO, error) {
 	if name == "" {
 		name = StringGenerator(len(client.ServiceAccountsDTO) + 1)
@@ -271,12 +291,14 @@ func (client *MockClient) GenerateServiceAccount(name, role string) (*gapi.Servi
 	return client.CreateServiceAccount(request)
 }
 
+// RoleGenerator returns a random role from the list
 func RoleGenerator() string {
 	rand.Seed(time.Now().UnixNano())
-	roles := []string{"Admin", "Viewer", "Editor"}
+	roles := []string{"Admin", "Viewer", "Editor", "MetricsPublisher"}
 	return roles[rand.Intn(len(roles))]
 }
 
+// StringGenerator returns a random string
 func StringGenerator(seed int) string {
 	rand.Seed(time.Now().UnixNano() + int64(seed))
 	return fmt.Sprintf("randomString-%d%d", rand.Intn(99999), rand.Intn(99999))
