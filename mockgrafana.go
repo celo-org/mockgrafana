@@ -167,6 +167,7 @@ func (client *MockClient) ListCloudAPIKeys(org string) (*gapi.ListCloudAPIKeysOu
 	}, nil
 }
 
+// DeleteCloudAPIKey is a Mock of the grafana api method, that will delete the specified key 
 func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
 
 	for idx, key := range client.CloudAPIKeys {
@@ -179,7 +180,7 @@ func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
 	return nil
 }
 
-// CreateCloudAPIKeys is a Mock of the grafana api method, that will create the specified cloud api keys 
+// CreateCloudAPIKey is a Mock of the grafana api method, that will create the specified cloud api key 
 func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudAPIKeyInput) (*gapi.CloudAPIKey, error) {
 	for _, key := range client.CloudAPIKeys {
 		if key.Name == input.Name {
