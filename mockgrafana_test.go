@@ -327,8 +327,8 @@ func TestDeleteServiceAccountToken(t *testing.T) {
 		countArg := 10
 		sa, _ := client.GenerateServiceAccount("", "")
 
-		token, err := client.GenerateServiceAccountToken("", sa.ID)
-		_, err = client.GenerateServiceAccountTokens(sa.ID, countArg)
+		token, _ := client.GenerateServiceAccountToken("", sa.ID)
+		_, err := client.GenerateServiceAccountTokens(sa.ID, countArg)
 		if err != nil {
 			log.Print("test", err)
 		}
@@ -454,8 +454,8 @@ func TestDeleteCloudAPIKey(t *testing.T) {
 		client := NewClient(12345678)
 		countArg := 10
 
-		key, err := client.GenerateCloudAPIKey("", "")
-		_, err = client.GenerateCloudAPIKeys(countArg, "", "")
+		key, _ := client.GenerateCloudAPIKey("", "")
+		_, err := client.GenerateCloudAPIKeys(countArg, "", "")
 		if err != nil {
 			log.Print("test", err)
 		}
