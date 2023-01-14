@@ -10,7 +10,6 @@ import (
 // MockClient is a substitute for the real grafana api token so we can
 // simulate the same behavior
 type MockClient struct {
-	OrgID              int64
 	ServiceAccountsDTO []gapi.ServiceAccountDTO
 	Tokens             []Token
 	CloudAPIKeys       []*gapi.CloudAPIKey
@@ -27,27 +26,26 @@ type Token struct {
 	SecondsToLive    int64      `json:"secondsToLive,omitempty"`
 }
 
-type GrafanaClientWrapperItf interface {
-    Initialize(string) error
-}
-
+/*
+	type GrafanaClientWrapperItf interface {
+	    Initialize(string) error
+	}
+*/
 type MockClientWrapper struct {
-    c *MockClient
+	c *MockClient
 }
 
-func (ClientWrapper *MockClientWrapper) Initialize(org int64) error{
-    ClientWrapper.c = NewClient(org)
-    return nil
+func (ClientWrapper *MockClientWrapper) Initialize(org string) error {
+	ClientWrapper.c = NewClient(org)
+	return nil
 }
 
 // NewClient returns a MockClient for use in simulating the grafana api key
-func NewClient(orgID string) *MockClient {
-	return &MockClient{
-		OrgID: orgID,
-	}
+func NewClient(masterKey string) *MockClient {
+	return &MockClient{}
 }
 
-// CreateServiceAccount is a Mock of the grafana api method, that will take a CreateServieAccountRequest and will create and return 
+// CreateServiceAccount is a Mock of the grafana api method, that will take a CreateServieAccountRequest and will create and return
 // the grafana service account created
 func (client *MockClient) CreateServiceAccount(request gapi.CreateServiceAccountRequest) (*gapi.ServiceAccountDTO, error) {
 	for _, sa := range client.ServiceAccountsDTO {
@@ -60,7 +58,6 @@ func (client *MockClient) CreateServiceAccount(request gapi.CreateServiceAccount
 		ID:     int64(len(client.ServiceAccountsDTO) + 1),
 		Name:   request.Name,
 		Login:  fmt.Sprintf("sa-%s", request.Name),
-		OrgID:  client.OrgID,
 		Role:   request.Role,
 		Tokens: 0,
 	}
@@ -139,7 +136,7 @@ func (client *MockClient) DeleteServiceAccount(serviceAccountID int64) (*gapi.De
 			client.ServiceAccountsDTO[idx] = client.ServiceAccountsDTO[len(client.ServiceAccountsDTO)-1]
 			client.ServiceAccountsDTO[len(client.ServiceAccountsDTO)-1] = gapi.ServiceAccountDTO{}
 			client.ServiceAccountsDTO = client.ServiceAccountsDTO[:len(client.ServiceAccountsDTO)-1]
-            return nil, nil
+			return nil, nil
 		}
 	}
 	return nil, fmt.Errorf("could not find token")
@@ -154,7 +151,7 @@ func (client *MockClient) DeleteServiceAccountToken(serviceAccountID, tokenID in
 			saFound = true
 		}
 	}
-	if !saFound  {
+	if !saFound {
 		return nil, fmt.Errorf("service account not found")
 	}
 	var tokenFound bool
@@ -180,7 +177,7 @@ func (client *MockClient) ListCloudAPIKeys(org string) (*gapi.ListCloudAPIKeysOu
 	}, nil
 }
 
-// DeleteCloudAPIKey is a Mock of the grafana api method, that will delete the specified key 
+// DeleteCloudAPIKey is a Mock of the grafana api method, that will delete the specified key
 func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
 
 	for idx, key := range client.CloudAPIKeys {
@@ -193,7 +190,7 @@ func (client *MockClient) DeleteCloudAPIKey(org string, keyName string) error {
 	return nil
 }
 
-// CreateCloudAPIKey is a Mock of the grafana api method, that will create the specified cloud api key 
+// CreateCloudAPIKey is a Mock of the grafana api method, that will create the specified cloud api key
 func (client *MockClient) CreateCloudAPIKey(org string, input *gapi.CreateCloudAPIKeyInput) (*gapi.CloudAPIKey, error) {
 	for _, key := range client.CloudAPIKeys {
 		if key.Name == input.Name {
@@ -263,7 +260,7 @@ func (client *MockClient) GenerateServiceAccountTokens(saID int64, count int) ([
 	return serviceAccountTokenResponses, nil
 }
 
-// GenerateServiceAccountToken Generates a ServiceAccountToken 
+// GenerateServiceAccountToken Generates a ServiceAccountToken
 func (client *MockClient) GenerateServiceAccountToken(name string, saID int64) (*gapi.CreateServiceAccountTokenResponse, error) {
 	if name == "" {
 		name = StringGenerator(len(client.Tokens) + 1)
