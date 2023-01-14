@@ -27,6 +27,19 @@ type Token struct {
 	SecondsToLive    int64      `json:"secondsToLive,omitempty"`
 }
 
+type GrafanaClientWrapperItf interface {
+    Initialize(string) error
+}
+
+type GrafanaClientWrapper struct {
+    c *MockClient
+}
+
+func (ClientWrapper *GrafanaClientWrapper) Initialize(org string) error{
+    ClientWrapper.c := NewClient(org)
+    return nil
+}
+
 // NewClient returns a MockClient for use in simulating the grafana api key
 func NewClient(orgID int64) *MockClient {
 	return &MockClient{
