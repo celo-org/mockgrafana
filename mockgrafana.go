@@ -31,11 +31,11 @@ type GrafanaClientWrapperItf interface {
     Initialize(string) error
 }
 
-type GrafanaClientWrapper struct {
+type MockClientWrapper struct {
     c *MockClient
 }
 
-func (ClientWrapper *GrafanaClientWrapper) Initialize(org int64) error{
+func (ClientWrapper *MockClientWrapper) Initialize(org int64) error{
     ClientWrapper.c = NewClient(org)
     return nil
 }
