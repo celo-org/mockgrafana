@@ -26,17 +26,7 @@ type Token struct {
 	SecondsToLive    int64      `json:"secondsToLive,omitempty"`
 }
 
-/*
-	type GrafanaClientWrapperItf interface {
-	    Initialize(string) error
-	}
-*/
-type MockClientWrapper struct {
-	c *MockClient
-}
-
-func (ClientWrapper *MockClientWrapper) Initialize(org string) error {
-	ClientWrapper.c = NewClient(org)
+func (ClientWrapper *MockClient) Initialize(org string) error {
 	return nil
 }
 
