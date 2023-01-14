@@ -35,8 +35,8 @@ type GrafanaClientWrapper struct {
     c *MockClient
 }
 
-func (ClientWrapper *GrafanaClientWrapper) Initialize(org string) error{
-    ClientWrapper.c := NewClient(org)
+func (ClientWrapper *GrafanaClientWrapper) Initialize(org int64) error{
+    ClientWrapper.c = NewClient(org)
     return nil
 }
 
