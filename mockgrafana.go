@@ -31,7 +31,7 @@ func (ClientWrapper *MockClient) Initialize(org string) error {
 }
 
 // NewClient returns a MockClient for use in simulating the grafana api key
-func NewClient(masterKey string) *MockClient {
+func NewClient() *MockClient {
 	return &MockClient{}
 }
 
