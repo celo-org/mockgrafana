@@ -10,8 +10,7 @@ import (
 
 func TestCreateServiceAccount(t *testing.T) {
 	t.Run("should return error if service account exists", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 		request := gapi.CreateServiceAccountRequest{
 			Name: StringGenerator(0),
 			Role: RoleGenerator(),
@@ -25,8 +24,7 @@ func TestCreateServiceAccount(t *testing.T) {
 	})
 
 	t.Run("should create one service account", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		request := gapi.CreateServiceAccountRequest{
 			Name: StringGenerator(0),
@@ -42,8 +40,7 @@ func TestCreateServiceAccount(t *testing.T) {
 	})
 
 	t.Run("service account should have correct name", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		arg := StringGenerator(0)
 		request := gapi.CreateServiceAccountRequest{
@@ -60,8 +57,7 @@ func TestCreateServiceAccount(t *testing.T) {
 	})
 
 	t.Run("service account should have correct role", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		arg := RoleGenerator()
 		request := gapi.CreateServiceAccountRequest{
@@ -80,8 +76,7 @@ func TestCreateServiceAccount(t *testing.T) {
 
 func TestCreateServiceAccountToken(t *testing.T) {
 	t.Run("should return error if service account doesn't exist", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		request := gapi.CreateServiceAccountTokenRequest{
 			Name:             StringGenerator(0),
@@ -95,8 +90,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("should return error if token name already exists", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		request := gapi.CreateServiceAccountTokenRequest{
 			Name:             StringGenerator(0),
@@ -111,8 +105,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("should create one token", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		sa, _ := client.GenerateServiceAccount("", "")
 
@@ -131,8 +124,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("should create token under the proper service account", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		sa, _ := client.GenerateServiceAccount("", "")
 
@@ -152,8 +144,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("token should have correct name from the request", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		arg := StringGenerator(0)
 		sa, _ := client.GenerateServiceAccount("", "")
@@ -174,8 +165,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("token should create a key", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		sa, _ := client.GenerateServiceAccount("", "")
 		tokenRequest := gapi.CreateServiceAccountTokenRequest{
@@ -195,8 +185,7 @@ func TestCreateServiceAccountToken(t *testing.T) {
 
 func TestGetServiceAccountTokens(t *testing.T) {
 	t.Run("should return the right number of tokens for the service account", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		argCount := 5
 
@@ -217,8 +206,7 @@ func TestGetServiceAccountTokens(t *testing.T) {
 	})
 
 	t.Run("tokens should be for the right service account", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		argCount := 5
 
@@ -252,8 +240,7 @@ func TestGetServiceAccountTokens(t *testing.T) {
 
 func TestDeleteServiceAccount(t *testing.T) {
 	t.Run("should return error if service account doesn't exist", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		nonexistentID := int64(rand.Intn(1000))
 		_, err := client.DeleteServiceAccount(nonexistentID)
@@ -264,8 +251,7 @@ func TestDeleteServiceAccount(t *testing.T) {
 	})
 
 	t.Run("service account should be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		sa, _ := client.GenerateServiceAccount("", "")
 		client.GenerateServiceAccounts(1)
@@ -286,8 +272,7 @@ func TestDeleteServiceAccount(t *testing.T) {
 		}
 	})
 	t.Run("extra serviceaccounts should not be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 		sa, _ := client.GenerateServiceAccount("", "")
@@ -306,8 +291,7 @@ func TestDeleteServiceAccount(t *testing.T) {
 
 func TestDeleteServiceAccountToken(t *testing.T) {
 	t.Run("should return error if token doesn't exist", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		nonexistentID := int64(rand.Intn(1000))
 		sa, _ := client.GenerateServiceAccount("", "")
@@ -319,8 +303,7 @@ func TestDeleteServiceAccountToken(t *testing.T) {
 		}
 	})
 	t.Run("should return error if service account doesn't exist", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		randomInt := int64(rand.Intn(1000))
 
@@ -332,8 +315,7 @@ func TestDeleteServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("token should be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 		sa, _ := client.GenerateServiceAccount("", "")
@@ -358,8 +340,7 @@ func TestDeleteServiceAccountToken(t *testing.T) {
 	})
 
 	t.Run("extra tokens should not be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 		sa, _ := client.GenerateServiceAccount("", "")
@@ -383,8 +364,7 @@ func TestDeleteServiceAccountToken(t *testing.T) {
 
 func TestCreateCloudAPIKey(t *testing.T) {
 	t.Run("should return error if request name exists", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		input := gapi.CreateCloudAPIKeyInput{
 			Name: StringGenerator(0),
@@ -399,8 +379,7 @@ func TestCreateCloudAPIKey(t *testing.T) {
 	})
 
 	t.Run("should create one api key", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		input := gapi.CreateCloudAPIKeyInput{
 			Name: StringGenerator(0),
@@ -416,8 +395,7 @@ func TestCreateCloudAPIKey(t *testing.T) {
 	})
 
 	t.Run("created key should have correct name", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		arg := "testName"
 
@@ -438,8 +416,7 @@ func TestCreateCloudAPIKey(t *testing.T) {
 
 func TestListCloudAPIKeys(t *testing.T) {
 	t.Run("created keys should have correct prefix", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 		client.GenerateCloudAPIKeys(countArg, "testprefix", "")
@@ -456,8 +433,7 @@ func TestListCloudAPIKeys(t *testing.T) {
 
 func TestDeleteCloudAPIKey(t *testing.T) {
 	t.Run("should have right number of keys", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 20
 
@@ -474,8 +450,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
 		}
 	})
 	t.Run("key should be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 
@@ -499,8 +474,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
 	})
 
 	t.Run("extra keys should not be deleted", func(t *testing.T) {
-		masterKeyArg := "12345678"
-		client := NewClient(masterKeyArg)
+		client := NewClient()
 
 		countArg := 10
 
@@ -523,8 +497,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
 }
 
 func TestGenerateServiceAccount(t *testing.T) {
-	masterKeyArg := "12345678"
-	client := NewClient(masterKeyArg)
+	client := NewClient()
 
 	count := 100
 	for i := 1; i <= count; i++ {
@@ -544,8 +517,7 @@ func TestGenerateServiceAccount(t *testing.T) {
 }
 
 func TestGenerateServiceAccountToken(t *testing.T) {
-	masterKeyArg := "12345678"
-	client := NewClient(masterKeyArg)
+	client := NewClient()
 
 	count := 100
 	sa, _ := client.GenerateServiceAccount("", "")
@@ -566,8 +538,7 @@ func TestGenerateServiceAccountToken(t *testing.T) {
 }
 
 func TestGenerateCloudAPIKey(t *testing.T) {
-	masterKeyArg := "12345678"
-	client := NewClient(masterKeyArg)
+	client := NewClient()
 
 	count := 100
 	for i := 1; i <= count; i++ {
