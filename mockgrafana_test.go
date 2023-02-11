@@ -8,6 +8,165 @@ import (
 	"github.com/grafana/grafana-api-golang-client"
 )
 
+func TestCreateCloudAccessPolicy(t *testing.T) {
+	t.Run("should not create access policy if invalid type", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		realmTypeArg := "InvalidType"
+		realmIdentifierArg := "clabs"
+		policyRealmsArg := NewRealm(realmTypeArg, realmIdentifierArg, `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+
+		input := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+
+		_, err := client.CreateCloudAccessPolicy("", input)
+
+		if err == nil {
+			t.Errorf("expected to get an error but was nil")
+		}
+	})
+
+	t.Run("should create access policy", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+
+		input := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+
+		client.CreateCloudAccessPolicy("", input)
+		want := policyNameArg
+		got := client.CloudAccessPolicies[0].Name
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+}
+
+func TestDeleteCloudAccessPolicy(t *testing.T) {
+	t.Run("should delete policy if it exists", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+
+		input := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+
+		policy, _ := client.CreateCloudAccessPolicy("", input)
+		client.DeleteCloudAccessPolicy("", policy.ID)
+
+		if len(client.CloudAccessPolicies) > 0 {
+			t.Errorf("expected access policies to be empty but found %v", client.CloudAccessPolicies)
+		}
+	})
+}
+
+func TestCreateCloudAccessPolicyToken(t *testing.T) {
+	t.Run("should return error if access policy doesn't exist", func(t *testing.T) {
+		client := NewClient()
+        tokenNameArg  := "TestTokenName"
+        
+        tokenInput := gapi.CreateCloudAccessPolicyTokenInput {
+            	AccessPolicyID: "3",
+                Name: tokenNameArg,
+                DisplayName: tokenNameArg,
+        }
+        
+        _, err := client.CreateCloudAccessPolicyToken("", &tokenInput)
+
+		if err == nil {
+			t.Errorf("expected error, but got none")
+		}
+	})
+
+	t.Run("should create access policy token", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+        tokenNameArg  := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+
+		policy, _ := client.CreateCloudAccessPolicy("", policyInput)
+        
+        tokenInput := gapi.CreateCloudAccessPolicyTokenInput {
+            	AccessPolicyID: policy.ID,
+                Name: tokenNameArg,
+                DisplayName: tokenNameArg,
+        }
+        
+        client.CreateCloudAccessPolicyToken("", &tokenInput)
+		want := tokenNameArg
+		got := client.CloudAccessPolicyTokens[0].Name
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+}
+
+func TestDeleteCloudAccessPolicyToken(t *testing.T) {
+    t.Run("should return error if token doesn't exist", func(t *testing.T) {
+         client := NewClient()
+         err := client.DeleteCloudAccessPolicyToken("", "3")
+         if err == nil {
+            t.Errorf("Expected an error got but none")
+         }
+    })
+
+    t.Run("should delete token from the access policy", func(t *testing.T) {
+        client := NewClient()
+		policyNameArg := "TestPolicyName"
+        tokenNameArg  := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+
+		policy, _ := client.CreateCloudAccessPolicy("", policyInput)
+        
+        tokenInput := gapi.CreateCloudAccessPolicyTokenInput {
+            	AccessPolicyID: policy.ID,
+                Name: tokenNameArg,
+                DisplayName: tokenNameArg,
+        }
+        
+        token, _ := client.CreateCloudAccessPolicyToken("", &tokenInput)
+        client.DeleteCloudAccessPolicyToken("", token.ID)
+        
+        if len(client.CloudAccessPolicyTokens) > 0 {
+            t.Errorf("tokens is %v", client.CloudAccessPolicyTokens)
+        }
+    })
+}
+
 func TestCreateServiceAccount(t *testing.T) {
 	t.Run("should return error if service account exists", func(t *testing.T) {
 		client := NewClient()

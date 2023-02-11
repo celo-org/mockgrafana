@@ -10,9 +10,11 @@ import (
 // MockClient is a substitute for the real grafana api token so we can
 // simulate the same behavior
 type MockClient struct {
-	ServiceAccountsDTO []gapi.ServiceAccountDTO
-	Tokens             []Token
-	CloudAPIKeys       []*gapi.CloudAPIKey
+	ServiceAccountsDTO      []gapi.ServiceAccountDTO
+	Tokens                  []Token
+	CloudAPIKeys            []*gapi.CloudAPIKey
+	CloudAccessPolicies     []*gapi.CloudAccessPolicy
+	CloudAccessPolicyTokens []*gapi.CloudAccessPolicyToken
 }
 
 // Token  is a simulation of a grafana api token
@@ -33,6 +35,81 @@ func (ClientWrapper *MockClient) Initialize(org string) error {
 // NewClient returns a MockClient for use in simulating the grafana api key
 func NewClient() *MockClient {
 	return &MockClient{}
+}
+
+func (c *MockClient) CreateCloudAccessPolicy(region string, input gapi.CreateCloudAccessPolicyInput) (gapi.CloudAccessPolicy, error) {
+	for _, realm := range input.Realms {
+		if realm.Type != "org" && realm.Type != "stack" {
+			return gapi.CloudAccessPolicy{}, fmt.Errorf("invalid realm type")
+		}
+	}
+	policy := gapi.CloudAccessPolicy{}
+	policy.Name = input.Name
+	policy.DisplayName = input.DisplayName
+	policy.Scopes = input.Scopes
+	policy.Realms = input.Realms
+	policy.ID = fmt.Sprintf("%d", len(c.CloudAccessPolicies)+1)
+	policy.CreatedAt = time.Now()
+
+	c.CloudAccessPolicies = append(c.CloudAccessPolicies, &policy)
+	return policy, nil
+}
+
+func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
+	policies := c.CloudAccessPolicies
+	var found bool
+	for idx, policy := range policies {
+		if policy.ID == id {
+			found = true
+			policies[idx] = policies[len(policies)-1]
+			policies[len(policies)-1] = nil
+			c.CloudAccessPolicies = policies[:len(policies)-1]
+		}
+	}
+	if found == true {
+		return nil
+	}
+	return fmt.Errorf("policy not found")
+}
+
+// CreateCloudAccessPolicyToken will create a fake Cloud Access Policy Token from an Input and return it
+func (c *MockClient) CreateCloudAccessPolicyToken(region string, input *gapi.CreateCloudAccessPolicyTokenInput) (gapi.CloudAccessPolicyToken, error) {
+	var accessPolicyFound bool
+	for _, accessPolicy := range c.CloudAccessPolicies {
+		if accessPolicy.ID == input.AccessPolicyID {
+			accessPolicyFound = true
+		}
+	}
+	if !accessPolicyFound {
+		return gapi.CloudAccessPolicyToken{}, fmt.Errorf("Access Policy not found")
+	}
+	token := gapi.CloudAccessPolicyToken{}
+	token.ID = fmt.Sprintf("%d", len(c.CloudAccessPolicyTokens)+1)
+	token.AccessPolicyID = input.AccessPolicyID
+	token.Name = input.Name
+	token.DisplayName = input.DisplayName
+	token.ExpiresAt = input.ExpiresAt
+	token.CreatedAt = time.Now()
+	c.CloudAccessPolicyTokens = append(c.CloudAccessPolicyTokens, &token)
+	return token, nil
+}
+
+// DeleteCloudAccessPolicyToken deletes the fake Cloud Access Policy token that matches the given ID
+func (c *MockClient) DeleteCloudAccessPolicyToken(region, id string) error {
+	tokens := c.CloudAccessPolicyTokens
+    var tokenFound bool
+	for idx, token := range tokens {
+		if token.ID == id {
+            tokenFound = true
+			tokens[idx] = tokens[len(tokens)-1]
+			tokens[len(tokens)-1] = nil
+            c.CloudAccessPolicyTokens = tokens[:len(tokens)-1]
+		}
+	}
+    if !tokenFound {
+        return fmt.Errorf("token not found")
+    }
+	return nil
 }
 
 // CreateServiceAccount is a Mock of the grafana api method, that will take a CreateServieAccountRequest and will create and return
@@ -305,4 +382,20 @@ func RoleGenerator() string {
 func StringGenerator(seed int) string {
 	rand.Seed(time.Now().UnixNano() + int64(seed))
 	return fmt.Sprintf("randomString-%d%d", rand.Intn(99999), rand.Intn(99999))
+}
+
+func NewRealm(realmType, realmIdentifier string, selectors ...string) gapi.CloudAccessPolicyRealm {
+	policyLabels := make([]gapi.CloudAccessPolicyLabelPolicy, 0)
+	for _, selector := range selectors {
+		policyLabel := gapi.CloudAccessPolicyLabelPolicy{
+			Selector: selector,
+		}
+		policyLabels = append(policyLabels, policyLabel)
+	}
+	realm := gapi.CloudAccessPolicyRealm{
+		Type:          realmType,
+		Identifier:    realmIdentifier,
+		LabelPolicies: policyLabels,
+	}
+	return realm
 }
