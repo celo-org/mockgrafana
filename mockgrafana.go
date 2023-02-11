@@ -90,6 +90,7 @@ func (c *MockClient) CreateCloudAccessPolicyToken(region string, input gapi.Crea
 	token.DisplayName = input.DisplayName
 	token.ExpiresAt = input.ExpiresAt
 	token.CreatedAt = time.Now()
+    token.Token = "MockToken"
 	c.CloudAccessPolicyTokens = append(c.CloudAccessPolicyTokens, &token)
 	return token, nil
 }

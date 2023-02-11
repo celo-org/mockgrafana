@@ -88,7 +88,7 @@ func TestCreateCloudAccessPolicyToken(t *testing.T) {
                 DisplayName: tokenNameArg,
         }
         
-        _, err := client.CreateCloudAccessPolicyToken("", &tokenInput)
+        _, err := client.CreateCloudAccessPolicyToken("", tokenInput)
 
 		if err == nil {
 			t.Errorf("expected error, but got none")
@@ -117,9 +117,9 @@ func TestCreateCloudAccessPolicyToken(t *testing.T) {
                 DisplayName: tokenNameArg,
         }
         
-        client.CreateCloudAccessPolicyToken("", &tokenInput)
-		want := tokenNameArg
-		got := client.CloudAccessPolicyTokens[0].Name
+        client.CreateCloudAccessPolicyToken("", tokenInput)
+		want := "MockToken"
+		got := client.CloudAccessPolicyTokens[0].Token
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
@@ -158,7 +158,7 @@ func TestDeleteCloudAccessPolicyToken(t *testing.T) {
                 DisplayName: tokenNameArg,
         }
         
-        token, _ := client.CreateCloudAccessPolicyToken("", &tokenInput)
+        token, _ := client.CreateCloudAccessPolicyToken("", tokenInput)
         client.DeleteCloudAccessPolicyToken("", token.ID)
         
         if len(client.CloudAccessPolicyTokens) > 0 {
