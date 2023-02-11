@@ -73,7 +73,7 @@ func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
 }
 
 // CreateCloudAccessPolicyToken will create a fake Cloud Access Policy Token from an Input and return it
-func (c *MockClient) CreateCloudAccessPolicyToken(region string, input *gapi.CreateCloudAccessPolicyTokenInput) (gapi.CloudAccessPolicyToken, error) {
+func (c *MockClient) CreateCloudAccessPolicyToken(region string, input gapi.CreateCloudAccessPolicyTokenInput) (gapi.CloudAccessPolicyToken, error) {
 	var accessPolicyFound bool
 	for _, accessPolicy := range c.CloudAccessPolicies {
 		if accessPolicy.ID == input.AccessPolicyID {
