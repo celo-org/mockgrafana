@@ -79,15 +79,6 @@ func TestCreateCloudAccessPolicy(t *testing.T) {
 	})
 }
 
-/*
-	func (c *MockClient) CloudAccessPolicies(region string) (gapi.CloudAccessPolicyItems, error) {
-	    policies := gapi.CloudAccessPolicyItems{}
-	    for _, policy := range c.CloudAccessPolicyItems {
-	        policies.Items = append(policies.Items, policy)
-	    }
-	    return policies, nil
-	}
-*/
 func TestCloudAccessPolicies(t *testing.T) {
 	t.Run("should return error if no region ", func(t *testing.T) {
 		client := NewClient()
@@ -139,6 +130,7 @@ func TestCloudAccessPolicies(t *testing.T) {
 		}
 	})
 }
+
 
 func TestDeleteCloudAccessPolicy(t *testing.T) {
 	t.Run("should delete policy if it exists", func(t *testing.T) {
@@ -259,7 +251,72 @@ func TestCreateCloudAccessPolicyToken(t *testing.T) {
 
 		client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
 		want := "MockToken"
-		got := client.CloudAccessPolicyTokens[0].Token
+		got := client.CloudAccessPolicyTokenItems[0].Token
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+}
+
+func TestCloudAccessPolicyTokens(t *testing.T) {
+	t.Run("should return error if no region ", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		tokenNameArg := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, policyInput)
+
+		tokenInput := gapi.CreateCloudAccessPolicyTokenInput{
+			AccessPolicyID: policy.ID,
+			Name:           tokenNameArg,
+			DisplayName:    tokenNameArg,
+		}
+
+		client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
+	    _, err := client.CloudAccessPolicyTokens("", policy.ID)
+
+		if err == nil {
+			t.Errorf("expected error but got none")
+		}
+	})
+
+	t.Run("should list access policy tokens", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		tokenNameArg := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, policyInput)
+
+		tokenInput := gapi.CreateCloudAccessPolicyTokenInput{
+			AccessPolicyID: policy.ID,
+			Name:           tokenNameArg,
+			DisplayName:    tokenNameArg,
+		}
+
+		client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
+	    items, _ := client.CloudAccessPolicyTokens(regionArg, policy.ID)
+
+    	want := tokenNameArg
+		got := items.Items[0].Name
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
@@ -333,8 +390,8 @@ func TestDeleteCloudAccessPolicyToken(t *testing.T) {
 		token, _ := client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
 		client.DeleteCloudAccessPolicyToken(regionArg, token.ID)
 
-		if len(client.CloudAccessPolicyTokens) > 0 {
-			t.Errorf("tokens is %v", client.CloudAccessPolicyTokens)
+		if len(client.CloudAccessPolicyTokenItems) > 0 {
+			t.Errorf("tokens is %v", client.CloudAccessPolicyTokenItems)
 		}
 	})
 }
