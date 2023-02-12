@@ -13,7 +13,7 @@ type MockClient struct {
 	ServiceAccountsDTO      []gapi.ServiceAccountDTO
 	Tokens                  []Token
 	CloudAPIKeys            []*gapi.CloudAPIKey
-	CloudAccessPolicies     []*gapi.CloudAccessPolicy
+	CloudAccessPolicyItems  []*gapi.CloudAccessPolicy
 	CloudAccessPolicyTokens []*gapi.CloudAccessPolicyToken
 }
 
@@ -37,7 +37,23 @@ func NewClient() *MockClient {
 	return &MockClient{}
 }
 
+func (c *MockClient) CloudAccessPolicies(region string) (gapi.CloudAccessPolicyItems, error) {
+   	if region == "" {
+		return gapi.CloudAccessPolicyItems{}, fmt.Errorf("region required")
+	}
+
+	policies := gapi.CloudAccessPolicyItems{}
+	for _, policy := range c.CloudAccessPolicyItems {
+		policies.Items = append(policies.Items, policy)
+	}
+	return policies, nil
+}
+
 func (c *MockClient) CreateCloudAccessPolicy(region string, input gapi.CreateCloudAccessPolicyInput) (gapi.CloudAccessPolicy, error) {
+	if region == "" {
+		return gapi.CloudAccessPolicy{}, fmt.Errorf("region required")
+	}
+
 	for _, realm := range input.Realms {
 		if realm.Type != "org" && realm.Type != "stack" {
 			return gapi.CloudAccessPolicy{}, fmt.Errorf("invalid realm type")
@@ -48,22 +64,26 @@ func (c *MockClient) CreateCloudAccessPolicy(region string, input gapi.CreateClo
 	policy.DisplayName = input.DisplayName
 	policy.Scopes = input.Scopes
 	policy.Realms = input.Realms
-	policy.ID = fmt.Sprintf("%d", len(c.CloudAccessPolicies)+1)
+	policy.ID = fmt.Sprintf("%d", len(c.CloudAccessPolicyItems)+1)
 	policy.CreatedAt = time.Now()
 
-	c.CloudAccessPolicies = append(c.CloudAccessPolicies, &policy)
+	c.CloudAccessPolicyItems = append(c.CloudAccessPolicyItems, &policy)
 	return policy, nil
 }
 
 func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
-	policies := c.CloudAccessPolicies
+	if region == "" {
+		return fmt.Errorf("region required")
+	}
+
+	policies := c.CloudAccessPolicyItems
 	var found bool
 	for idx, policy := range policies {
 		if policy.ID == id {
 			found = true
 			policies[idx] = policies[len(policies)-1]
 			policies[len(policies)-1] = nil
-			c.CloudAccessPolicies = policies[:len(policies)-1]
+			c.CloudAccessPolicyItems = policies[:len(policies)-1]
 		}
 	}
 	if found == true {
@@ -74,8 +94,12 @@ func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
 
 // CreateCloudAccessPolicyToken will create a fake Cloud Access Policy Token from an Input and return it
 func (c *MockClient) CreateCloudAccessPolicyToken(region string, input gapi.CreateCloudAccessPolicyTokenInput) (gapi.CloudAccessPolicyToken, error) {
+	if region == "" {
+		return gapi.CloudAccessPolicyToken{}, fmt.Errorf("region required")
+	}
+
 	var accessPolicyFound bool
-	for _, accessPolicy := range c.CloudAccessPolicies {
+	for _, accessPolicy := range c.CloudAccessPolicyItems {
 		if accessPolicy.ID == input.AccessPolicyID {
 			accessPolicyFound = true
 		}
@@ -90,26 +114,30 @@ func (c *MockClient) CreateCloudAccessPolicyToken(region string, input gapi.Crea
 	token.DisplayName = input.DisplayName
 	token.ExpiresAt = input.ExpiresAt
 	token.CreatedAt = time.Now()
-    token.Token = "MockToken"
+	token.Token = "MockToken"
 	c.CloudAccessPolicyTokens = append(c.CloudAccessPolicyTokens, &token)
 	return token, nil
 }
 
 // DeleteCloudAccessPolicyToken deletes the fake Cloud Access Policy token that matches the given ID
 func (c *MockClient) DeleteCloudAccessPolicyToken(region, id string) error {
+	if region == "" {
+		return fmt.Errorf("region required")
+	}
+
 	tokens := c.CloudAccessPolicyTokens
-    var tokenFound bool
+	var tokenFound bool
 	for idx, token := range tokens {
 		if token.ID == id {
-            tokenFound = true
+			tokenFound = true
 			tokens[idx] = tokens[len(tokens)-1]
 			tokens[len(tokens)-1] = nil
-            c.CloudAccessPolicyTokens = tokens[:len(tokens)-1]
+			c.CloudAccessPolicyTokens = tokens[:len(tokens)-1]
 		}
 	}
-    if !tokenFound {
-        return fmt.Errorf("token not found")
-    }
+	if !tokenFound {
+		return fmt.Errorf("token not found")
+	}
 	return nil
 }
 
