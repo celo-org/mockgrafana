@@ -290,6 +290,36 @@ func TestCloudAccessPolicyTokens(t *testing.T) {
 		}
 	})
 
+	t.Run("should not return anything if access policy ID is empty", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		tokenNameArg := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, policyInput)
+
+		tokenInput := gapi.CreateCloudAccessPolicyTokenInput{
+			AccessPolicyID: policy.ID,
+			Name:           tokenNameArg,
+			DisplayName:    tokenNameArg,
+		}
+
+		client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
+	    items, _ := client.CloudAccessPolicyTokens(regionArg, "")
+
+		if len(items.Items) > 0 {
+			t.Errorf("expected empty tokens, but found %+v", items.Items)
+		}
+	})
+
 	t.Run("should list access policy tokens", func(t *testing.T) {
 		client := NewClient()
 		policyNameArg := "TestPolicyName"

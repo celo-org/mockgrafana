@@ -56,7 +56,9 @@ func (c *MockClient) CloudAccessPolicyTokens(region, accessPolicyID string) (gap
     
     tokens := gapi.CloudAccessPolicyTokenItems{}
     for _, token := range c.CloudAccessPolicyTokenItems {
-        tokens.Items = append(tokens.Items, token)
+        if token.AccessPolicyID == accessPolicyID {
+            tokens.Items = append(tokens.Items, token)
+        }
     }
     return tokens, nil
 }
