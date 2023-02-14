@@ -10,10 +10,10 @@ import (
 // MockClient is a substitute for the real grafana api token so we can
 // simulate the same behavior
 type MockClient struct {
-	ServiceAccountsDTO      []gapi.ServiceAccountDTO
-	Tokens                  []Token
-	CloudAPIKeys            []*gapi.CloudAPIKey
-	CloudAccessPolicyItems  []*gapi.CloudAccessPolicy
+	ServiceAccountsDTO          []gapi.ServiceAccountDTO
+	Tokens                      []Token
+	CloudAPIKeys                []*gapi.CloudAPIKey
+	CloudAccessPolicyItems      []*gapi.CloudAccessPolicy
 	CloudAccessPolicyTokenItems []*gapi.CloudAccessPolicyToken
 }
 
@@ -38,7 +38,7 @@ func NewClient() *MockClient {
 }
 
 func (c *MockClient) CloudAccessPolicies(region string) (gapi.CloudAccessPolicyItems, error) {
-   	if region == "" {
+	if region == "" {
 		return gapi.CloudAccessPolicyItems{}, fmt.Errorf("region required")
 	}
 
@@ -50,17 +50,17 @@ func (c *MockClient) CloudAccessPolicies(region string) (gapi.CloudAccessPolicyI
 }
 
 func (c *MockClient) CloudAccessPolicyTokens(region, accessPolicyID string) (gapi.CloudAccessPolicyTokenItems, error) {
-   	if region == "" {
+	if region == "" {
 		return gapi.CloudAccessPolicyTokenItems{}, fmt.Errorf("region required")
 	}
-    
-    tokens := gapi.CloudAccessPolicyTokenItems{}
-    for _, token := range c.CloudAccessPolicyTokenItems {
-        if token.AccessPolicyID == accessPolicyID {
-            tokens.Items = append(tokens.Items, token)
-        }
-    }
-    return tokens, nil
+
+	tokens := gapi.CloudAccessPolicyTokenItems{}
+	for _, token := range c.CloudAccessPolicyTokenItems {
+		if token.AccessPolicyID == accessPolicyID {
+			tokens.Items = append(tokens.Items, token)
+		}
+	}
+	return tokens, nil
 }
 
 func (c *MockClient) CreateCloudAccessPolicy(region string, input gapi.CreateCloudAccessPolicyInput) (gapi.CloudAccessPolicy, error) {
@@ -104,6 +104,64 @@ func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
 		return nil
 	}
 	return fmt.Errorf("policy not found")
+}
+
+func (client *MockClient) GenerateCloudAccessPolicies(count int, prefix string) []*gapi.CloudAccessPolicy {
+	var policies []*gapi.CloudAccessPolicy
+
+	for i := 0; i < count; i++ {
+		policy := client.GenerateCloudAccessPolicy(prefix)
+		policies = append(policies, policy)
+	}
+	return policies
+}
+
+func (client *MockClient) GenerateCloudAccessPolicy(name string) *gapi.CloudAccessPolicy {
+	if name == "" {
+		name = StringGenerator(len(client.CloudAccessPolicyItems) + 1)
+	}
+	policy := gapi.CloudAccessPolicy{}
+	policy.Name = name
+	policy.DisplayName = name
+	policy.Scopes = []string{ScopeGenerator()}
+	policy.Realms = []gapi.CloudAccessPolicyRealm{RealmGenerator()}
+	policy.ID = fmt.Sprintf("%d", len(client.CloudAccessPolicyItems)+1)
+	policy.CreatedAt = time.Now()
+
+	client.CloudAccessPolicyItems = append(client.CloudAccessPolicyItems, &policy)
+	return &policy
+}
+
+func (client *MockClient) GenerateCloudAccessPolicyToken(name string) *gapi.CloudAccessPolicyToken {
+	policy := client.GenerateCloudAccessPolicy(name)
+    token := gapi.CloudAccessPolicyToken{}
+	token.ID = fmt.Sprintf("%v", len(client.CloudAccessPolicyTokenItems)+1)
+	token.AccessPolicyID = policy.ID
+	token.Name = name
+	token.DisplayName = name
+	token.CreatedAt = time.Now()
+
+    client.CloudAccessPolicyTokenItems = append(client.CloudAccessPolicyTokenItems, &token)
+
+	return &token
+}
+
+func ScopeGenerator() string {
+	rand.Seed(time.Now().Unix())
+	resources := []string{"metrics", "logs", "traces", "alerts", "rules"}
+	permissions := []string{"read", "write"}
+
+	scope := fmt.Sprintf("%v:%v", resources[rand.Intn(len(resources))], permissions[rand.Intn(len(permissions))])
+	return scope
+}
+
+func RealmGenerator() gapi.CloudAccessPolicyRealm {
+	rand.Seed(time.Now().Unix())
+	realmTypes := []string{"org", "stack"}
+	realm := gapi.CloudAccessPolicyRealm{}
+	realm.Type = realmTypes[rand.Intn(len(realmTypes))]
+	realm.Identifier = StringGenerator(0)
+	return realm
 }
 
 // CreateCloudAccessPolicyToken will create a fake Cloud Access Policy Token from an Input and return it
