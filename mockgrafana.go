@@ -90,16 +90,25 @@ func (c *MockClient) DeleteCloudAccessPolicy(region, id string) error {
 		return fmt.Errorf("region required")
 	}
 
+    tokens := c.CloudAccessPolicyTokenItems
+    idx := 0
+    for _, token := range tokens {
+        if token.AccessPolicyID != id {
+            tokens[idx] = token
+            idx++
+        }
+    }
+    c.CloudAccessPolicyTokenItems = tokens[:idx]
+
 	policies := c.CloudAccessPolicyItems
 	var found bool
 	for idx, policy := range policies {
 		if policy.ID == id {
 			found = true
-			policies[idx] = policies[len(policies)-1]
-			policies[len(policies)-1] = nil
-			c.CloudAccessPolicyItems = policies[:len(policies)-1]
+            c.CloudAccessPolicyItems = append(policies[:idx], policies[idx+1:]...)
 		}
 	}
+
 	if found == true {
 		return nil
 	}
@@ -132,11 +141,19 @@ func (client *MockClient) GenerateCloudAccessPolicy(name string) *gapi.CloudAcce
 	return &policy
 }
 
-func (client *MockClient) GenerateCloudAccessPolicyToken(name string) *gapi.CloudAccessPolicyToken {
-	policy := client.GenerateCloudAccessPolicy(name)
+func (client *MockClient) GenerateCloudAccessPolicyTokens(count int, prefix, accessPolicyID string) []*gapi.CloudAccessPolicyToken {
+	var tokens []*gapi.CloudAccessPolicyToken
+	for i := 0; i < count; i++ {
+		token := client.GenerateCloudAccessPolicyToken(prefix, accessPolicyID)
+		tokens = append(tokens, token)
+	}
+	return tokens
+}
+
+func (client *MockClient) GenerateCloudAccessPolicyToken(name, policyID string) *gapi.CloudAccessPolicyToken {
     token := gapi.CloudAccessPolicyToken{}
 	token.ID = fmt.Sprintf("%v", len(client.CloudAccessPolicyTokenItems)+1)
-	token.AccessPolicyID = policy.ID
+	token.AccessPolicyID = policyID
 	token.Name = name
 	token.DisplayName = name
 	token.CreatedAt = time.Now()
@@ -196,17 +213,19 @@ func (c *MockClient) DeleteCloudAccessPolicyToken(region, id string) error {
 	if region == "" {
 		return fmt.Errorf("region required")
 	}
+   
+    tokens := c.CloudAccessPolicyTokenItems
+    var tokenFound bool
+    idx := 0
+    for _, token := range tokens {
+        if token.AccessPolicyID != id {
+        	tokenFound = true
+            tokens[idx] = token
+            idx++
+        }
+    }
+    c.CloudAccessPolicyTokenItems = tokens[:idx]
 
-	tokens := c.CloudAccessPolicyTokenItems
-	var tokenFound bool
-	for idx, token := range tokens {
-		if token.ID == id {
-			tokenFound = true
-			tokens[idx] = tokens[len(tokens)-1]
-			tokens[len(tokens)-1] = nil
-			c.CloudAccessPolicyTokenItems = tokens[:len(tokens)-1]
-		}
-	}
 	if !tokenFound {
 		return fmt.Errorf("token not found")
 	}

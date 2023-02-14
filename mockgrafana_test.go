@@ -155,6 +155,29 @@ func TestDeleteCloudAccessPolicy(t *testing.T) {
 			t.Errorf("expected access policies to be empty but found %v", client.CloudAccessPolicyItems)
 		}
 	})
+	t.Run("should delete tokens from policy", func(t *testing.T) {
+    	client := NewClient()
+		policyNameArg := "TestPolicyName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+        count := 100
+
+		input := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, input)
+        client.GenerateCloudAccessPolicyTokens(count, "", policy.ID)
+    	client.DeleteCloudAccessPolicy(regionArg, policy.ID)
+
+		if len(client.CloudAccessPolicyTokenItems) > 0 {
+			t.Errorf("expected access policy tokens to be empty but found %v", client.CloudAccessPolicyTokenItems)
+		}
+	})
+
 	t.Run("should return error if region doesn't exist", func(t *testing.T) {
 		client := NewClient()
 		policyNameArg := "TestPolicyName"
@@ -898,10 +921,7 @@ func TestDeleteCloudAPIKey(t *testing.T) {
 		countArg := 10
 
 		key, _ := client.GenerateCloudAPIKey("", "")
-		_, err := client.GenerateCloudAPIKeys(countArg, "", "")
-		if err != nil {
-			log.Print("test", err)
-		}
+		client.GenerateCloudAPIKeys(countArg, "", "")
 
 		client.DeleteCloudAPIKey("", key.Name)
 
@@ -944,7 +964,6 @@ func TestGenerateServiceAccountToken(t *testing.T) {
 		_, err := client.GenerateServiceAccountToken("", sa.ID)
 		if err != nil {
 			break
-
 		}
 	}
 
@@ -964,7 +983,6 @@ func TestGenerateCloudAPIKey(t *testing.T) {
 		_, err := client.GenerateCloudAPIKey("", "")
 		if err != nil {
 			break
-
 		}
 	}
 
@@ -1038,9 +1056,9 @@ func TestGenerateCloudAccessPolicyToken(t *testing.T) {
         client := NewClient()
         nameArg := "TestArg"
         count := 100
-        for i := 1; i <= count; i++ {
-            client.GenerateCloudAccessPolicyToken(fmt.Sprintf("%v-%d", nameArg, count))
-        }
+
+        accessPolicy := client.GenerateCloudAccessPolicy(nameArg)
+        client.GenerateCloudAccessPolicyTokens(count, fmt.Sprintf("%v", nameArg), accessPolicy.ID )
 
         want := count
         got := len(client.CloudAccessPolicyTokenItems)
@@ -1054,9 +1072,10 @@ func TestGenerateCloudAccessPolicyToken(t *testing.T) {
     t.Run("should generate token with the correct name", func(t *testing.T) {
         client := NewClient()
         nameArg := "TestName"
+        accessPolicy := client.GenerateCloudAccessPolicy(nameArg)
 
         want := nameArg
-        got := client.GenerateCloudAccessPolicyToken(nameArg).Name
+        got := client.GenerateCloudAccessPolicyToken(nameArg, accessPolicy.ID).Name
 
         if got != want {
             t.Errorf("got %q want %q", got, want)
@@ -1066,27 +1085,31 @@ func TestGenerateCloudAccessPolicyToken(t *testing.T) {
     t.Run("should generate policy and return it", func(t *testing.T) {
         client := NewClient()
         nameArg := "TestName"
+        accessPolicy := client.GenerateCloudAccessPolicy(nameArg)
 
         want := "*gapi.CloudAccessPolicyToken"
-        got := client.GenerateCloudAccessPolicyToken(nameArg)
+        got := client.GenerateCloudAccessPolicyToken(nameArg, accessPolicy.ID)
 
         if reflect.TypeOf(got).String() != want {
             t.Errorf("got %q want %q", got, want)
         }
     })
 }
-/*
-func (client *MockClient) GenerateCloudAccessPolicyToken(name string) *gapi.CloudAccessPolicyToken {
-	policy := client.GenerateCloudAccessPolicy(name)
-    token := gapi.CloudAccessPolicyToken{}
-	token.ID = fmt.Sprintf("%v", len(client.CloudAccessPolicyTokenItems)+1)
-	token.AccessPolicyID = policy.ID
-	token.Name = name
-	token.DisplayName = name
-	token.CreatedAt = time.Now()
 
-    client.CloudAccessPolicyTokenItems = append(client.CloudAccessPolicyTokenItems, &token)
+func TestGenerateCloudAccessPolicyTokens(t *testing.T) {
+	t.Run("should generate the specified number of tokens", func(t *testing.T) {
+		client := NewClient()
+		nameArg := "TestName"
+        accessPolicy := client.GenerateCloudAccessPolicy(nameArg)
+		count := 10
 
-	return &token
+		client.GenerateCloudAccessPolicyTokens(count, nameArg, accessPolicy.ID)
+
+		want := count
+		got := len(client.CloudAccessPolicyTokenItems)
+
+		if got != want {
+			t.Errorf("got %v policies but want %v", got, want)
+		}
+	})
 }
-*/
