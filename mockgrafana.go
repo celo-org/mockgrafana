@@ -2,6 +2,7 @@ package mockgrafana
 
 import (
 	"fmt"
+    "log"
 	"github.com/grafana/grafana-api-golang-client"
 	"math/rand"
 	"time"
