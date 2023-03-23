@@ -223,9 +223,10 @@ func (c *MockClient) DeleteCloudAccessPolicyToken(region, id string) error {
         log.Printf("comparing %+v to %+v", token.ID, id)
         if token.ID != id {
             
-        	tokenFound = true
             tokens[idx] = token
             idx++
+        } else {
+            tokenFound = true
         }
     }
     c.CloudAccessPolicyTokenItems = tokens[:idx]
