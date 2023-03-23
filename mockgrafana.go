@@ -218,12 +218,12 @@ func (c *MockClient) DeleteCloudAccessPolicyToken(region, id string) error {
     var tokenFound bool
     idx := 0
     for _, token := range tokens {
-        if token.ID != id {
-            
+        switch token.ID == id {
+        case true:
+            tokenFound = true
+        case false:  
             tokens[idx] = token
             idx++
-        } else {
-            tokenFound = true
         }
     }
     c.CloudAccessPolicyTokenItems = tokens[:idx]
