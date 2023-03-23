@@ -63,6 +63,20 @@ func (c *MockClient) CloudAccessPolicyTokens(region, accessPolicyID string) (gap
 	return tokens, nil
 }
 
+func (c *MockClient) CloudAccessPolicyTokenByID(region, ID string) (gapi.CloudAccessPolicyToken, error) {
+	if region == "" {
+		return gapi.CloudAccessPolicyToken{}, fmt.Errorf("region required")
+	}
+	for _, token := range c.CloudAccessPolicyTokenItems {
+		if token.ID == ID {
+            return *token, nil
+		}
+	}
+	return gapi.CloudAccessPolicyToken{}, fmt.Errorf("token not found")
+}
+
+
+
 func (c *MockClient) CreateCloudAccessPolicy(region string, input gapi.CreateCloudAccessPolicyInput) (gapi.CloudAccessPolicy, error) {
 	if region == "" {
 		return gapi.CloudAccessPolicy{}, fmt.Errorf("region required")

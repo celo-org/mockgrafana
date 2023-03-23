@@ -283,6 +283,71 @@ func TestCreateCloudAccessPolicyToken(t *testing.T) {
 	})
 }
 
+func TestCloudAccessPolicyTokenByID(t *testing.T) {
+	t.Run("should return error if no region ", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		tokenNameArg := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, policyInput)
+
+		tokenInput := gapi.CreateCloudAccessPolicyTokenInput{
+			AccessPolicyID: policy.ID,
+			Name:           tokenNameArg,
+			DisplayName:    tokenNameArg,
+		}
+
+		client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
+		_, err := client.CloudAccessPolicyTokens("", policy.ID)
+
+		if err == nil {
+			t.Errorf("expected error but got none")
+		}
+	})
+
+	t.Run("should get access policy token", func(t *testing.T) {
+		client := NewClient()
+		policyNameArg := "TestPolicyName"
+		tokenNameArg := "TestTokenName"
+		policyRealmsArg := NewRealm("org", "clabs", `{env="dev"}`)
+		policyScopesArg := []string{"testScope"}
+		regionArg := "us"
+
+		policyInput := gapi.CreateCloudAccessPolicyInput{
+			Name:        policyNameArg,
+			DisplayName: policyNameArg,
+			Scopes:      policyScopesArg,
+			Realms:      []gapi.CloudAccessPolicyRealm{policyRealmsArg},
+		}
+		policy, _ := client.CreateCloudAccessPolicy(regionArg, policyInput)
+
+		tokenInput := gapi.CreateCloudAccessPolicyTokenInput{
+			AccessPolicyID: policy.ID,
+			Name:           tokenNameArg,
+			DisplayName:    tokenNameArg,
+		}
+
+		token, _ := client.CreateCloudAccessPolicyToken(regionArg, tokenInput)
+		foundToken, _ := client.CloudAccessPolicyTokenByID(regionArg, token.ID)
+
+		want := tokenNameArg
+		got := foundToken.Name
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+}
+
 func TestCloudAccessPolicyTokens(t *testing.T) {
 	t.Run("should return error if no region ", func(t *testing.T) {
 		client := NewClient()
