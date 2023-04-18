@@ -28,7 +28,7 @@ type Token struct {
 	SecondsToLive    int64      `json:"secondsToLive,omitempty"`
 }
 
-func (ClientWrapper *MockClient) Initialize(org string) error {
+func (ClientWrapper *MockClient) Initialize(key, org string) error {
 	return nil
 }
 
