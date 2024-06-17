@@ -6,5 +6,7 @@ github.com/grafana/grafana-api-golang-client v0.18.3 h1:z0AhbGG6suChLb8t2fADpEO9
 github.com/grafana/grafana-api-golang-client v0.18.3/go.mod h1:24W29gPe9yl0/3A9X624TPkAOR8DpHno490cPwnkv8E=
 github.com/grafana/grafana-api-golang-client v0.19.0 h1:4z8voB2nv/bMiP4WbCKdhCym2mltSDFUzOrDqzohrw0=
 github.com/grafana/grafana-api-golang-client v0.19.0/go.mod h1:24W29gPe9yl0/3A9X624TPkAOR8DpHno490cPwnkv8E=
+github.com/grafana/grafana-api-golang-client v0.27.0 h1:zIwMXcbCB4n588i3O2N6HfNcQogCNTd/vPkEXTr7zX8=
+github.com/grafana/grafana-api-golang-client v0.27.0/go.mod h1:uNLZEmgKtTjHBtCQMwNn3qsx2mpMb8zU+7T4Xv3NR9Y=
 github.com/hashicorp/go-cleanhttp v0.5.2 h1:035FKYIWjmULyFRBKPs8TBQoi0x6d9G4xc9neXJWAZQ=
 github.com/hashicorp/go-cleanhttp v0.5.2/go.mod h1:kO/YDlP8L1346E6Sodw+PrpBSV4/SoxCXGY6BqNFT48=
